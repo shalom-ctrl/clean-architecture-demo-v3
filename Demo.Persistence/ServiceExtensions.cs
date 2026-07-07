@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Demo.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +12,13 @@ namespace Demo.Persistence
 {
     public static class ServiceExtensions
     {
-        public static void AddPersistenceServices(this IServiceCollection services)
+        public static void AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add your persistence-related services here, e.g., DbContext, repositories, etc.
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            });
         }
     }
 }

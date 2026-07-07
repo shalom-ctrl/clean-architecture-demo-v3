@@ -17,9 +17,9 @@ namespace clean_architecture_demo_v3_api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetProducts(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetProducts(CancellationToken cancellationToken)
         {
-           var result = _mediator.Send(new GetAllProductsQuery(), cancellationToken);
+           var result =await _mediator.Send(new GetAllProductsQuery(), cancellationToken);
             return Ok(result);
         }
     }

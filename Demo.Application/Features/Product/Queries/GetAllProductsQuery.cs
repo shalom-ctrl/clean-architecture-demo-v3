@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Demo.Application.Features.Product.Queries
 {
-    public class GetAllProductsQuery : IRequest<IEnumerable<Product>>
+    public class GetAllProductsQuery : IRequest<IEnumerable<Domain.Entities.Product>>
     {
-        internal class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, IEnumerable<Product>>
+        internal class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, IEnumerable<Domain.Entities.Product>>
         {
-            public Task<IEnumerable<Product>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
+            public Task<IEnumerable<Domain.Entities.Product>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
             {
-                var list = new List<Product>();
+                var list = new List<Domain.Entities.Product>();
                 for(int i = 0; i < 100; i++)
                 {
-                    var product = new Product();
+                    var product = new Domain.Entities.Product();
                     product.Name = "Product " + i;
                     product.Description = "Description " + i;
                     product.Rate = i * 10;
@@ -24,15 +24,10 @@ namespace Demo.Application.Features.Product.Queries
                     list.Add(product);
                 }
 
-                return Task.FromResult<IEnumerable<Product>>(list);
+                return Task.FromResult<IEnumerable<Domain.Entities.Product>>(list);
             }
         }
     }
 
-    public class Product
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public decimal Rate { get; set; }
-    }
+
 }
