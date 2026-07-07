@@ -1,4 +1,5 @@
-﻿using Demo.Persistence.Data;
+﻿using Demo.Application.Interfaces;
+using Demo.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,8 @@ namespace Demo.Persistence
 
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
+
+            services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
         }
     }
 }

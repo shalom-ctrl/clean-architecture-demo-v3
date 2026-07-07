@@ -1,4 +1,5 @@
-﻿using Demo.Domain.Entities;
+﻿using Demo.Application.Interfaces;
+using Demo.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Demo.Persistence.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -17,5 +18,10 @@ namespace Demo.Persistence.Data
         }
 
         public DbSet<Product> Products { get; set; }
+
+        public async Task<int> SaveChangesAsync()
+        {
+            return await base.SaveChangesAsync();
+        }
     }
 }
