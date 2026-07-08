@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
+using Demo.Application.Exceptions;
 
 namespace Demo.Application.Behaviours
 {
@@ -26,7 +27,7 @@ namespace Demo.Application.Behaviours
 
                 if (failures.Count > 0)
                 {
-                    throw new ValidationException(failures);
+                    throw new ValidationErrorException(failures);
                 }
             }
             var response = await next();

@@ -1,3 +1,4 @@
+using clean_architecture_demo_v3_api.Middlewares;
 using Demo.Application;
 using Demo.infrastructure;
 using Demo.Persistence;
@@ -26,7 +27,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.MapControllers();
 
 app.Run();

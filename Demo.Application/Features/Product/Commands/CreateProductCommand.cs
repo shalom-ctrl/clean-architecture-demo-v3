@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Demo.Application.Interfaces;
+using Demo.Application.Wrappers;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace Demo.Application.Features.Product.Commands
 {
-    public class CreateProductCommand : IRequest<int>
+    public class CreateProductCommand : IRequest<ApiResponse<int>>
     {
         public string Name { get; set; }
         public string Remarks { get; set; }
         public decimal Rate { get; set; }
-        internal class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, int>
+        internal class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, ApiResponse<int>>
         {
             private readonly IApplicationDbContext _dbContext;
             private readonly IMapper _mapper;
@@ -24,20 +25,13 @@ namespace Demo.Application.Features.Product.Commands
                 _dbContext = dbContext;
                 _mapper = mapper;
             }
-            public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
+            public async Task<ApiResponse<int>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
             {
                 var product = _mapper.Map<Domain.Entities.Product>(request);
-                //var product = new Demo.Domain.Entities.Product();
-
-                //product.Name = request.Name;
-                //product.Description = request.Description;
-                //product.Rate = request.Rate;
-                //product.CreatedBy = "Admin";
-
-
                 await _dbContext.Products.AddAsync(product);
                 await _dbContext.SaveChangesAsync();
-                return product.Id;
+
+                return new ApiResponse<int>(product.Id, "Product Created successfully");
             }
         }
     }

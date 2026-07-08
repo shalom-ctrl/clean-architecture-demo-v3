@@ -1,4 +1,6 @@
-﻿using Demo.Application.Interfaces;
+﻿using Demo.Application.Exceptions;
+using Demo.Application.Interfaces;
+using Demo.Application.Wrappers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace Demo.Application.Features.Product.Queries
 {
-    public class GetProductsByIdQuery : IRequest<Domain.Entities.Product>
+    public class GetProductsByIdQuery : IRequest<ApiResponse<Domain.Entities.Product>>
     {
         public int Id { get; set; }
-        internal class GetProductsByIdQueryHandler : IRequestHandler<GetProductsByIdQuery , Domain.Entities.Product>
+        internal class GetProductsByIdQueryHandler : IRequestHandler<GetProductsByIdQuery , ApiResponse<Domain.Entities.Product>>
         {
             private readonly IApplicationDbContext _dbContext;
 
@@ -20,10 +22,15 @@ namespace Demo.Application.Features.Product.Queries
             {
                 _dbContext = dbContext;
             }
-            public async Task<Domain.Entities.Product> Handle(GetProductsByIdQuery request, CancellationToken cancellationToken)
+            public async Task<ApiResponse<Domain.Entities.Product>> Handle(GetProductsByIdQuery request, CancellationToken cancellationToken)
             {
                 var result = await _dbContext.Products.Where(x => x.Id == request.Id).FirstOrDefaultAsync();
-                return result;
+                if(result == null)
+                {
+                    throw new ApiException($"Product with Id {request.Id} not found.");
+                }
+
+                return new ApiResponse<Domain.Entities.Product>(result, "Data Fetched successfully");
             }
         }
     }
