@@ -3,6 +3,7 @@ using Demo.Application.Features.Product.Commands;
 using Demo.Application.Features.Product.Queries;
 using Demo.Application.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +20,12 @@ namespace clean_architecture_demo_v3_api.Controllers
             _accountService = accountService;
         }
 
+        [HttpPost("Auth")]
+        public async Task<IActionResult> Authentication(AuthenticationRequest authentication, CancellationToken cancellationToken)
+        {
+           var result =  await _accountService.Authenticate(authentication);
+            return Ok(result);
+        }
 
         [HttpPost("RegisterUser")]
         public async Task<IActionResult> RegisterUser(RegisterRequest register, CancellationToken cancellationToken)
