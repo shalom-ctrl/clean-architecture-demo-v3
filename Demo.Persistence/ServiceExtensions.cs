@@ -1,5 +1,9 @@
 ﻿using Demo.Application.Interfaces;
 using Demo.Persistence.Data;
+using Demo.Persistence.IdentityModels;
+using Demo.Persistence.Seeds;
+using Demo.Persistence.SharedServices;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +25,15 @@ namespace Demo.Persistence
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
 
+           
+            services.AddIdentityCore<ApplicationUser>()
+                .AddRoles<ApplicationRole>()
+                .AddRoleManager<RoleManager<ApplicationRole>>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
+
+            services.AddTransient<IAccountService, AccountService>();
+
         }
     }
 }
