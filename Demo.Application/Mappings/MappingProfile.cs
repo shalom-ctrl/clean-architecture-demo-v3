@@ -12,7 +12,8 @@ namespace Demo.Application.Mappings
     {
         public MappingProfile()
         {
-            CreateMap<CreateProductCommand, Demo.Domain.Entities.Product>().ForMember(destination => destination.Description, source => source.MapFrom(s => s.Remarks));
+            CreateMap<CreateProductCommand, Demo.Domain.Entities.Product>()
+                .ForMember(destination => destination.Description, source => source.MapFrom(s => s.Remarks)).ReverseMap();
         }
     }
 }
