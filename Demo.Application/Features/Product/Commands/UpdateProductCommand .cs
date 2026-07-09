@@ -1,4 +1,5 @@
-﻿using Demo.Application.Exceptions;
+﻿using clean_architecture_demo_v3_api.SharedServices;
+using Demo.Application.Exceptions;
 using Demo.Application.Interfaces;
 using Demo.Application.Wrappers;
 using MediatR;
@@ -20,10 +21,12 @@ namespace Demo.Application.Features.Product.Commands
         internal class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, ApiResponse<int>>
         {
             private readonly IApplicationDbContext _dbContext;
+            private readonly IAuthenticatedUser _authenticatedUser;
 
-            public UpdateProductCommandHandler(IApplicationDbContext dbContext)
+            public UpdateProductCommandHandler(IApplicationDbContext dbContext, IAuthenticatedUser authenticatedUser)
             {
                 _dbContext = dbContext;
+                _authenticatedUser = authenticatedUser;
             }
             public async Task<ApiResponse<int>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
             {
@@ -37,6 +40,8 @@ namespace Demo.Application.Features.Product.Commands
                 product.Name = request.Name;
                 product.Description = request.Description;
                 product.Rate = request.Rate;
+                product.ModifiedBy = _authenticatedUser.UserId;
+                product.ModifiedOn = DateTime.Now;
                 product.ModifiedBy = "Admin";
 
                 await _dbContext.SaveChangesAsync();

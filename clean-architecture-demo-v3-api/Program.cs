@@ -1,4 +1,5 @@
 using clean_architecture_demo_v3_api.Middlewares;
+using clean_architecture_demo_v3_api.SharedServices;
 using Demo.Application;
 using Demo.cleanarchitecturewebapi;
 using Demo.infrastructure;
@@ -50,6 +51,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddApplicationServices();
 builder.Services.AddPersistenceServices(builder.Configuration);
+builder.Services.AddScoped<IAuthenticatedUser , AuthenticatedUser>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructureServices();
 builder.Services.AddAuthentication(options =>
 {

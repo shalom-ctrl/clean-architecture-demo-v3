@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using clean_architecture_demo_v3_api.SharedServices;
 using Demo.Application.Interfaces;
 using Demo.Application.Wrappers;
 using MediatR;
@@ -19,15 +20,19 @@ namespace Demo.Application.Features.Product.Commands
         {
             private readonly IApplicationDbContext _dbContext;
             private readonly IMapper _mapper;
+            private readonly IAuthenticatedUser _authenticatedUser;
 
-            public CreateProductCommandHandler(IApplicationDbContext dbContext, IMapper mapper)
+            public CreateProductCommandHandler(IApplicationDbContext dbContext, IMapper mapper, IAuthenticatedUser authenticatedUser)
             {
                 _dbContext = dbContext;
                 _mapper = mapper;
+                _authenticatedUser = authenticatedUser;
             }
             public async Task<ApiResponse<int>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
             {
                 var product = _mapper.Map<Domain.Entities.Product>(request);
+                product.CreatedBy = _authenticatedUser.UserId;
+                product.CreatedOn = DateTime.Now;
                 await _dbContext.Products.AddAsync(product);
                 await _dbContext.SaveChangesAsync();
 
