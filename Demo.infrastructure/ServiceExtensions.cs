@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Demo.infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Demo.infrastructure
     {
         public static void AddInfrastructureServices(this IServiceCollection services)
         {
-            // Add your infrastructure-related services here, e.g., logging, caching, etc.
+            services.AddTransient<IEmailService, EmailService>();
         }
     }
 }

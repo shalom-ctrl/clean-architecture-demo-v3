@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>clean_architecture_demo_v3_api</RootNamespace>
+    <UserSecretsId>c36a5a8d-135e-44d1-a201-5c87699f853f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
