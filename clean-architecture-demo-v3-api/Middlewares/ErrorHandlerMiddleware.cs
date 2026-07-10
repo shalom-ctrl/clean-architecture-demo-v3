@@ -8,9 +8,11 @@ namespace clean_architecture_demo_v3_api.Middlewares
     public class ErrorHandlerMiddleware
     {
         private readonly RequestDelegate _next;
-        public ErrorHandlerMiddleware(RequestDelegate next)
+        private readonly ILogger<ErrorHandlerMiddleware> _logger;
+        public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -42,7 +44,9 @@ namespace clean_architecture_demo_v3_api.Middlewares
                         break;
                 }
 
-               var result =  JsonSerializer.Serialize(responseModel);
+                _logger.LogError(ex, ex.Message);
+
+                var result =  JsonSerializer.Serialize(responseModel);
                 await response.WriteAsync(result);
             }
         }

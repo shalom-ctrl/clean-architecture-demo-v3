@@ -8,13 +8,30 @@ using Demo.Persistence.Seeds;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+Log.Logger = new LoggerConfiguration()
+          .MinimumLevel.Information()
+          .WriteTo.Console()
+            .WriteTo.MSSqlServer(
+                connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+                sinkOptions: new MSSqlServerSinkOptions { TableName = "SerilogEvents", AutoCreateSqlTable = true })
+          //.WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+          .CreateLogger();
 
-builder.Services.AddControllers();
+Log.Information("Hello, world!");
+
+try
+{
+    builder.Host.UseSerilog();
+
+    // Add services to the container.
+
+    builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerExtension();
@@ -130,3 +147,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+}
+catch (Exception ex)
+{
+    Log.Error(ex, "Something went wrong");
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}
