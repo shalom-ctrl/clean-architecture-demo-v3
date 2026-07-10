@@ -12,5 +12,7 @@ namespace Demo.Application.Interfaces
     {
         Task<ApiResponse<AuthenticationResponse>> Authenticate(AuthenticationRequest request);
         Task<ApiResponse<Guid>> RegisterUser(RegisterRequest request);
+
+        Task<ApiResponse<bool>> ConfirmEmail(string userId, string token);
     }
 }

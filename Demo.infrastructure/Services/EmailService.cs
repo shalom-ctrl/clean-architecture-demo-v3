@@ -49,7 +49,9 @@ namespace Demo.infrastructure.Services
 
             }
             catch (System.Exception ex)
-            { }
+            {
+                throw new Exception($"SMTP Email Dispatch Failed: {ex.Message}", ex);
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ using Demo.Application.Wrappers;
 using Demo.infrastructure.Services;
 using Demo.Persistence.IdentityModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -37,6 +38,11 @@ namespace Demo.Persistence.SharedServices
             if(user == null)
             {
                 throw new ApiException($"User not Registered with this {request.Email}");
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                throw new ApiException($"Email is not confirmed for this {request.Email}. Please confirm your email before logging in.");
             }
 
             var success = await _userManager.CheckPasswordAsync(user, request.Password);
@@ -110,7 +116,6 @@ namespace Demo.Persistence.SharedServices
             userModel.UserName = request.Username;
             userModel.Email = request.Email;
             userModel.Gender = request.Gender;
-            userModel.EmailConfirmed = true;
             userModel.PhoneNumberConfirmed = true;
 
             var result = await _userManager.CreateAsync(userModel, request.Password);
@@ -184,20 +189,62 @@ namespace Demo.Persistence.SharedServices
 </html>
 ";
 
-                var emailRequest = new EmailRequest()
-                {
-                    To = userModel.Email,
-                    Body = emailTemplate.Replace("[UserName]", userModel.Email),
-                    Subject = "Demo Application",
-                    IsHtmlBody = true
-                };
-                await _emailService.SendAsync(emailRequest);
-                return new ApiResponse<Guid>(userModel.Id, "User registered successfully.");
+                //var emailRequest = new EmailRequest()
+                //{
+                //    To = userModel.Email,
+                //    Body = emailTemplate.Replace("[UserName]", userModel.Email),
+                //    Subject = "Demo Application",
+                //    IsHtmlBody = true
+                //};
+                //await _emailService.SendAsync(emailRequest);
+
+                await SendConfirmationEmailAsync(userModel);
+                return new ApiResponse<Guid>(userModel.Id, "Verification Email Has Been Sent");
             }
             else
             {
                 var errorMessages = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new ApiException(errorMessages);
+            }
+        }
+
+        private async Task SendConfirmationEmailAsync(ApplicationUser userModel)
+        {
+            string token = await _userManager.GenerateEmailConfirmationTokenAsync(userModel);
+
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            string verificationUrl = $"https://localhost:5001/api/account/confirm-email?userId={userModel.Id}&token={Uri.EscapeDataString(token)}";
+
+            var emailRequest = new EmailRequest()
+            {
+                To = userModel.Email,
+                Body = $"Please confirm your email by clicking on the following link: <a href='{verificationUrl}'>Confirm Email</a>",
+                Subject = "Email Confirmation",
+                IsHtmlBody = true
+            };
+
+            await _emailService.SendAsync(emailRequest);
+        }
+
+        public async Task<ApiResponse<bool>> ConfirmEmail(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if(user == null)
+            {
+                throw new ApiException($"User not found with this {userId}");
+
+            }
+
+            token =  Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (result.Succeeded)
+            {
+                return new ApiResponse<bool>(true, "Email Confirmed Successfully");
+            }
+            else
+            {
+                throw new ApiException(result.Errors.ToString());
             }
         }
     }
