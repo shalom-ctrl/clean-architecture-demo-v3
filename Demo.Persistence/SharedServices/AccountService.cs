@@ -46,11 +46,19 @@ namespace Demo.Persistence.SharedServices
                 throw new ApiException($"Email is not confirmed for this {request.Email}. Please confirm your email before logging in.");
             }
 
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                throw new ApiException($"User account is locked out. Please try again later.");
+            }
+
             var success = await _userManager.CheckPasswordAsync(user, request.Password);
             if (!success)
             {
+                await _userManager.AccessFailedAsync(user);
                 throw new ApiException($"Email or Password is incorrect.");
             }
+
+            await _userManager.ResetAccessFailedCountAsync(user);
             var jwtSecurity = await GenerateTokenAsync(user);
             var authenticationResponse = new AuthenticationResponse();
 
