@@ -14,5 +14,6 @@ namespace Demo.Application.Interfaces
         Task<ApiResponse<Guid>> RegisterUser(RegisterRequest request);
 
         Task<ApiResponse<bool>> ConfirmEmail(string userId, string token);
+        Task<ApiResponse<bool>> ResendConfirmationEmailAsync(string email);
     }
 }
