@@ -6,6 +6,7 @@ using Demo.Application.Wrappers;
 using Demo.infrastructure.Services;
 using Demo.Persistence.IdentityModels;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -101,7 +102,7 @@ namespace Demo.Persistence.SharedServices
 
         }
 
-        public async Task<ApiResponse<Guid>> RegisterUser(RegisterRequest request)
+        public async Task<ApiResponse<Guid>> RegisterUser(Application.DTOs.RegisterRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user != null)
@@ -214,12 +215,20 @@ namespace Demo.Persistence.SharedServices
 
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            string verificationUrl = $"https://localhost:5001/api/account/confirm-email?userId={userModel.Id}&token={Uri.EscapeDataString(token)}";
+            string emailBody = $@"
+        <h3>Account Verification Details</h3>
+        <p>Thank you for registering! Please use the credentials below to confirm your account:</p>
+        <hr/>
+        <p><strong>User ID:</strong> {userModel.Id}</p>
+        <p><strong>Verification Token:</strong></p>
+        <pre style='background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; word-break: break-all;'>{token}</pre>
+        <hr/>
+        <p>Copy and paste these values into your application's confirmation form or Swagger panel to complete your registration.</p>";
 
             var emailRequest = new EmailRequest()
             {
                 To = userModel.Email,
-                Body = $"Please confirm your email by clicking on the following link: <a href='{verificationUrl}'>Confirm Email</a>",
+                Body = emailBody,
                 Subject = "Email Confirmation",
                 IsHtmlBody = true
             };
@@ -263,6 +272,62 @@ namespace Demo.Persistence.SharedServices
 
             await SendConfirmationEmailAsync(user);
             return new ApiResponse<bool>(true, "Verification email has been sent to your account, pls verify your account.");
+        }
+
+        public async Task<ApiResponse<bool>> ForgotPasswordAsync(string userEmail)
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user == null)
+            {
+                throw new ApiException($"User not found with this {userEmail}");
+            }
+
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            string emailBody = $@"
+        <h3>Password Reset Request</h3>
+        <p>We received a request to reset your account password. Please use the credentials below to complete the reset process:</p>
+        <hr/>
+        <p><strong>Account Email:</strong> {userEmail}</p>
+        <p><strong>Reset Token:</strong></p>
+        <pre style='background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; word-break: break-all;'>{token}</pre>
+        <hr/>
+        <p>Copy and paste this token along with your email address into your application's password reset form or Swagger panel.</p>";
+
+            var emailRequest = new EmailRequest()
+            {
+                To = userEmail,
+                Body = emailBody,
+                Subject = "Reset Password Verification",
+                IsHtmlBody = true,
+            };
+
+            await _emailService.SendAsync(emailRequest);
+            return new ApiResponse<bool>(true, "Reset password link has been sent to your account, pls check your email.");
+        }
+
+        public async Task<ApiResponse<bool>> ResetPasswordAsync(Application.DTOs.ResetPasswordRequest resetPassword)
+        {
+            var user = await _userManager.FindByEmailAsync(resetPassword.Email);
+            if (user == null)
+            {
+                throw new ApiException($"User not found with this {resetPassword.Email}");
+            }
+
+            var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPassword.Token));
+
+            var result = await _userManager.ResetPasswordAsync(user, token, resetPassword.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return new ApiResponse<bool>(true, "Password reset successfully");
+            }
+            else
+            {
+                throw new ApiException(result.Errors.ToString());
+            }
         }
 
     }

@@ -5,6 +5,7 @@ using Demo.Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace clean_architecture_demo_v3_api.Controllers
@@ -28,7 +29,7 @@ namespace clean_architecture_demo_v3_api.Controllers
         }
 
         [HttpPost("RegisterUser")]
-        public async Task<IActionResult> RegisterUser(RegisterRequest register, CancellationToken cancellationToken)
+        public async Task<IActionResult> RegisterUser(Demo.Application.DTOs.RegisterRequest register, CancellationToken cancellationToken)
         {
            var result =  await _accountService.RegisterUser(register);
            return Ok(result);
@@ -45,6 +46,20 @@ namespace clean_architecture_demo_v3_api.Controllers
         public async Task<IActionResult> ResendConfirmEmail([FromQuery] string email, CancellationToken cancellationToken)
         {
             var result = await _accountService.ResendConfirmationEmailAsync(email);
+            return Ok(result);
+        }
+
+        [HttpGet("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromQuery] string email, CancellationToken cancellationToken)
+        {
+            var result = await _accountService.ForgotPasswordAsync(email);
+            return Ok(result);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(Demo.Application.DTOs.ResetPasswordRequest resetPassword, CancellationToken cancellationToken)
+        {
+            var result = await _accountService.ResetPasswordAsync(resetPassword);
             return Ok(result);
         }
     }
